@@ -20,14 +20,16 @@ PromBoard 커뮤니티 플러그인입니다. 캔버스에 **SeedVR2 사진 업�
 
 ## 받는 것 · 크기
 
-| 판 | 받는 크기 | 출처 |
-|---|---|---|
-| 3B · fp8 (기본) | 3.4GB | numz/SeedVR2_comfyUI |
-| 3B · fp16 | 6.8GB | numz/SeedVR2_comfyUI |
-| 3B · GGUF Q4 | 2.0GB | AInVFX/SeedVR2_comfyUI |
-| 7B · fp8 | 8.5GB | AInVFX/SeedVR2_comfyUI |
-| 7B 선명 · fp8 | 8.5GB | AInVFX/SeedVR2_comfyUI |
-| 7B · GGUF Q4 | 4.8GB | AInVFX/SeedVR2_comfyUI |
+| 판 | 받는 크기 | 필요 그래픽카드 메모리(어림값) | 출처 |
+|---|---|---|---|
+| 3B · fp8 | 3.4GB | 8GB | numz/SeedVR2_comfyUI |
+| 3B · fp16 | 6.8GB | 12GB | numz/SeedVR2_comfyUI |
+| 3B · GGUF Q4 | 2.0GB | 6GB | AInVFX/SeedVR2_comfyUI |
+| 7B · fp8 | 8.5GB | 12GB | AInVFX/SeedVR2_comfyUI |
+| 7B 선명 · fp8 | 8.5GB | 12GB | AInVFX/SeedVR2_comfyUI |
+| 7B · GGUF Q4 | 4.8GB | 8GB | AInVFX/SeedVR2_comfyUI |
+
+처음 값 **자동**은 이 PC 그래픽카드 메모리가 8GB 이상이면 3B · fp8, 그 밖(앱이 메모리를 모르는 맥 · AMD 포함)은 3B · GGUF Q4 를 고르고 그 판만 받습니다. 필요 메모리는 DiT 가중치 + 계산 몫 약 3GB(노드가 BlockSwap 을 정하는 기준) + VAE 0.5GB 를 그래픽카드 크기로 올린 값입니다. 7B · GGUF Q4 는 numz 안내('7B 를 8GB 에서 GGUF 로')를 따랐습니다. 그보다 작은 그래픽카드에서도 BlockSwap 으로 돌지만 느려집니다.
 
 모든 판에 VAE(0.5GB, numz)와 글 임베딩(1MB, ByteDance-Seed/SeedVR2-3B)이 함께 받아집니다. 고른 판만 받고, 파일마다 sha256 을 확인합니다. 가중치는 모두 Apache-2.0 이고 플러그인 zip 에는 들어 있지 않습니다.
 
@@ -53,7 +55,7 @@ RTX 4070 SUPER 12GB · Windows 11, 판 3B · fp8:
 
 1. PromBoard → 플러그인 매니저 → **커뮤니티 플러그인** → 둘러보기에서 설치합니다.
 2. 코드가 든 플러그인이라 **제한 모드**를 끄고 플러그인을 켭니다.
-3. 처음 실행 전 실행 준비가 파이썬 패키지(앱이 고정한 torch 2.8.0 포함)와 고른 판의 가중치(기본 3.9GB)를 받습니다.
+3. 처음 실행 전 실행 준비가 파이썬 패키지(앱이 고정한 torch 2.8.0 포함)와 고른 판의 가중치(자동이면 3.9GB, 그래픽카드 8GB 미만 · 맥 · AMD 는 2.5GB)를 받습니다.
 4. 캔버스 빈 곳을 오른쪽 클릭하면 메뉴 맨 아래 플러그인 묶음에 두 노드가 있습니다.
 
 ## 플러그인 만드는 사람을 위한 메모
@@ -89,7 +91,7 @@ Left: the original shrunk to 1/4 (159×145) and enlarged 4× with plain bicubic.
 
 ### Downloads
 
-3B · fp8 (default) 3.4 GB, 3B · fp16 6.8 GB (numz/SeedVR2_comfyUI); 3B · GGUF Q4 2.0 GB, 7B · fp8 8.5 GB, 7B sharp · fp8 8.5 GB, 7B · GGUF Q4 4.8 GB (AInVFX/SeedVR2_comfyUI). Every model also needs the VAE (0.5 GB, numz) and the text embeddings (1 MB, ByteDance-Seed/SeedVR2-3B). Only the chosen model is downloaded, each file pinned by sha256. All weights are Apache-2.0 and none are in the plugin zip.
+3B · fp8 3.4 GB, 3B · fp16 6.8 GB (numz/SeedVR2_comfyUI); 3B · GGUF Q4 2.0 GB, 7B · fp8 8.5 GB, 7B sharp · fp8 8.5 GB, 7B · GGUF Q4 4.8 GB (AInVFX/SeedVR2_comfyUI). Estimated GPU memory: 3B · GGUF Q4 6 GB; 3B · fp8 and 7B · GGUF Q4 8 GB; 3B · fp16 and both 7B · fp8 12 GB (DiT weights + about 3 GB for compute, the node's BlockSwap rule, + 0.5 GB VAE, rounded up to a card size; 7B · GGUF Q4 follows numz's "7B on 8 GB with GGUF"). Smaller cards still run with BlockSwap, more slowly. The default, Auto, picks 3B · fp8 on an 8 GB+ GPU and 3B · GGUF Q4 otherwise (including Macs and AMD cards, whose memory the app cannot read). Every model also needs the VAE (0.5 GB, numz) and the text embeddings (1 MB, ByteDance-Seed/SeedVR2-3B). Only the chosen model is downloaded, each file pinned by sha256. All weights are Apache-2.0 and none are in the plugin zip.
 
 ### GPU memory and time (measured)
 
@@ -97,7 +99,7 @@ RTX 4070 SUPER 12 GB · Windows 11, 3B · fp8: photo 159×145 → 636×580 PNG, 
 
 ### Install
 
-PromBoard → Plugin Manager → **Community plugins** → Browse → install, turn off **Restricted mode** and enable the plugin. The first prepare downloads the Python packages (including the app's pinned torch 2.8.0) and the chosen model (3.9 GB by default). Right-click an empty spot on the canvas: the nodes are in the plugin group at the bottom of the menu.
+PromBoard → Plugin Manager → **Community plugins** → Browse → install, turn off **Restricted mode** and enable the plugin. The first prepare downloads the Python packages (including the app's pinned torch 2.8.0) and the chosen model (with Auto 3.9 GB, or 2.5 GB below 8 GB of GPU memory and on Macs and AMD cards). Right-click an empty spot on the canvas: the nodes are in the plugin group at the bottom of the menu.
 
 The plugin texts in the app are Korean only for now — the plugin manifest takes a single language.
 
