@@ -42,6 +42,8 @@ RTX 4070 SUPER 12GB · Windows 11, 판 3B · fp8:
 - 걸린 시간의 거의 전부가 가중치(3.4GB)를 디스크에서 읽는 시간입니다. 실제 업스케일 계산은 2초 남짓(DiT 1.2초 · VAE 0.4초)이었습니다. 시험 PC 는 여러 작업이 같은 하드디스크를 함께 쓰던 상태라 읽기가 아주 느렸고, 보통 SSD 에서는 훨씬 빠릅니다.
 - **미검증 — 영상**: 480×320 · 3초 영상 2배를 돌렸지만, 위와 같은 디스크 읽기 때문에 앱의 노드 실행 한도(18분)를 넘겨 끝내지 못했습니다(그래픽카드 메모리는 최대 9.8GB 까지 썼습니다). 영상 결과는 확인하지 못했습니다.
 - **미검증**: 3B · fp16, GGUF Q4, 7B 판들.
+- 영상과 다른 판을 확인하지 못해 앱에는 '검증 안 됨'으로 보입니다(1.0.2 부터).
+- 지원 OS: 윈도우(위 실측) · 리눅스 · 맥(애플 칩, MPS). 리눅스 · 맥은 잠금 파일과 코드 경로만 있고 돌려 보지 않았습니다.
 
 ## 라이선스
 
@@ -91,7 +93,7 @@ Left: the original shrunk to 1/4 (159×145) and enlarged 4× with plain bicubic.
 
 ### GPU memory and time (measured)
 
-RTX 4070 SUPER 12 GB · Windows 11, 3B · fp8: photo 159×145 → 636×580 PNG, peak GPU memory 5.8 GB (whole card), 6 min 34 s. Almost all of that time was reading the 3.4 GB weights from disk — the upscale itself took about 2 seconds (DiT 1.2 s, VAE 0.4 s). The test PC's hard disk was shared by several jobs and very slow; a normal SSD is much faster. **Not verified — video**: a 480×320, 3-second clip at 2× was started but, because of the same disk reads, did not finish within the app's node time limit (18 minutes); it used up to 9.8 GB of GPU memory, and the video result was not checked. **Not verified**: 3B · fp16, GGUF Q4 and the 7B models.
+RTX 4070 SUPER 12 GB · Windows 11, 3B · fp8: photo 159×145 → 636×580 PNG, peak GPU memory 5.8 GB (whole card), 6 min 34 s. Almost all of that time was reading the 3.4 GB weights from disk — the upscale itself took about 2 seconds (DiT 1.2 s, VAE 0.4 s). The test PC's hard disk was shared by several jobs and very slow; a normal SSD is much faster. **Not verified — video**: a 480×320, 3-second clip at 2× was started but, because of the same disk reads, did not finish within the app's node time limit (18 minutes); it used up to 9.8 GB of GPU memory, and the video result was not checked. **Not verified**: 3B · fp16, GGUF Q4 and the 7B models. Because video and the other models are unchecked, the app shows the plugin as unverified (from 1.0.2). Supported OS: Windows (measured above), Linux and macOS (Apple silicon, MPS); Linux and macOS have lock files and code paths but were not run.
 
 ### Install
 
