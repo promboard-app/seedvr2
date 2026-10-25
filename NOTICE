@@ -1,0 +1,23 @@
+promboard.seedvr2
+Copyright 2026 PromBoard
+
+This plugin is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes inference code from numz/ComfyUI-SeedVR2_VideoUpscaler v2.5.24
+(https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler, commit 4490bd1f482e026674543386bb2a4d176da245b9),
+Copyright NumZ and AInVFX, licensed under the Apache License, Version 2.0
+(nodes/seedvr2_core/LICENSE). That code in turn contains code from
+ByteDance-Seed/SeedVR (https://github.com/ByteDance-Seed/SeedVR),
+Copyright (c) 2025 Bytedance Ltd. and/or its affiliates, Apache License 2.0.
+
+Changes made by PromBoard in nodes/seedvr2_core:
+- removed the ComfyUI node code (src/interfaces) and the model downloader (src/utils/downloads.py)
+- removed the OmegaConf "eval" resolver and wrote the computed values into configs_3b/main.yaml and configs_7b/main.yaml
+- config "__object__" paths only resolve to the registered model classes (no dynamic import)
+- the 3B/7B config is chosen from the checkpoint file name only
+- the text embedding paths (pos_emb.pt / neg_emb.pt) are set by the plugin
+- reworded the "pip install ..." hints inside error messages
+
+Model weights are not included. The plugin downloads them at prepare time from
+ByteDance-Seed/SeedVR2-3B, numz/SeedVR2_comfyUI and AInVFX/SeedVR2_comfyUI on Hugging Face
+(all Apache License 2.0).

@@ -1,0 +1,15 @@
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.0
+numpy
+safetensors
+einops
+omegaconf
+diffusers
+rotary-embedding-torch
+gguf
+psutil
+tqdm
+pillow
+opencv-python-headless
+av

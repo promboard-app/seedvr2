@@ -1,0 +1,580 @@
+{
+  "schema": 1,
+  "id": "promboard.seedvr2",
+  "version": "1.0.0",
+  "name": "SeedVR2 — 사진 · 영상 업스케일",
+  "description": "ByteDance SeedVR2 로 사진 · 영상을 2~4배 키우며 흐린 부분 · 잡티를 되살린다(한 단계 확산 복원). 사진은 투명 PNG 의 알파도 함께 키우고, 영상은 원본 소리를 그대로 담는다. 판은 3B(기본) · 7B 와 fp16 · fp8 · GGUF Q4 중에서 고르고 고른 판만 받는다. 12GB 그래픽카드는 3B · fp8 이 기본이고, 메모리가 모자라면 BlockSwap · VAE 타일을 스스로 켠다. 코드 · 가중치 모두 Apache-2.0.",
+  "author": "PromBoard",
+  "license": "Apache-2.0",
+  "app": ">=1.0.1",
+  "repository": "https://github.com/promboard-app/seedvr2",
+  "icon": "icon.png",
+  "contents": [
+    "nodes"
+  ],
+  "nodes": [
+    {
+      "id": "image",
+      "label": "SeedVR2 사진 업스케일",
+      "description": "사진 한 장을 2~4배(또는 정한 짧은 변 길이로) 키우며 흐린 부분 · 잡티를 되살린다. 투명 PNG 는 투명한 부분도 함께 키운다. 결과는 PNG. 전/후 비교 슬라이더로 원본과 견줘 볼 수 있다.",
+      "layout": "single",
+      "views": [
+        "compare"
+      ],
+      "inputs": [
+        {
+          "id": "image",
+          "type": "image",
+          "label": "사진",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "image",
+          "type": "image",
+          "label": "키운 사진"
+        }
+      ],
+      "settings": [
+        {
+          "id": "model",
+          "label": "판",
+          "help": "3B · fp8 이 12GB 그래픽카드의 기본입니다. 7B 는 더 자세하지만 느리고, 그래픽카드 메모리가 모자라면 일부를 시스템 메모리로 옮겨(BlockSwap) 더 느려집니다. GGUF Q4 는 가장 가볍고 품질이 조금 낮습니다. 고른 판만 받습니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "3b-fp8",
+              "label": "3B · fp8 (기본, 3.4GB)"
+            },
+            {
+              "value": "3b-fp16",
+              "label": "3B · fp16 (6.8GB)"
+            },
+            {
+              "value": "3b-q4",
+              "label": "3B · GGUF Q4 (2.0GB, 가장 가벼움)"
+            },
+            {
+              "value": "7b-fp8",
+              "label": "7B · fp8 (8.5GB, 고품질)"
+            },
+            {
+              "value": "7b-sharp-fp8",
+              "label": "7B 선명 · fp8 (8.5GB)"
+            },
+            {
+              "value": "7b-q4",
+              "label": "7B · GGUF Q4 (4.8GB)"
+            }
+          ],
+          "default": "3b-fp8"
+        },
+        {
+          "id": "scale",
+          "label": "크기",
+          "help": "몇 배로 키울지, 또는 결과의 짧은 변 길이. 사진은 긴 변 4096px, 영상은 긴 변 2560px 까지 키웁니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "x2",
+              "label": "2배"
+            },
+            {
+              "value": "x3",
+              "label": "3배"
+            },
+            {
+              "value": "x4",
+              "label": "4배"
+            },
+            {
+              "value": "1080",
+              "label": "짧은 변 1080px"
+            },
+            {
+              "value": "1440",
+              "label": "짧은 변 1440px"
+            },
+            {
+              "value": "2160",
+              "label": "짧은 변 2160px"
+            }
+          ],
+          "default": "x2"
+        },
+        {
+          "id": "color",
+          "label": "색 맞추기",
+          "help": "키운 결과의 색을 원본에 맞춥니다. LAB 이 원본 색에 가장 가깝습니다(권장). 웨이블릿은 자연스러운 색, 안 함은 모델이 낸 색 그대로입니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "lab",
+              "label": "원본 색 (LAB)"
+            },
+            {
+              "value": "wavelet",
+              "label": "웨이블릿"
+            },
+            {
+              "value": "none",
+              "label": "안 함"
+            }
+          ],
+          "default": "lab"
+        },
+        {
+          "id": "seed",
+          "label": "시드",
+          "help": "같은 시드 · 같은 입력이면 같은 결과가 나옵니다.",
+          "type": "integer",
+          "default": 42,
+          "min": 0,
+          "max": 2147483647
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "label": "SeedVR2 영상 업스케일",
+      "description": "영상(60초까지)을 2~4배(또는 정한 짧은 변 길이로) 키우며 흐린 부분 · 잡티를 되살린다. 결과는 원본과 같은 fps · 프레임 수의 mp4(H.264)이고 원본 소리를 그대로 담는다. 긴 영상은 오래 걸리니 짧게 잘라 넣는다.",
+      "layout": "single",
+      "views": [
+        "frameStrip"
+      ],
+      "inputs": [
+        {
+          "id": "video",
+          "type": "video",
+          "label": "영상",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "video",
+          "type": "video",
+          "label": "키운 영상"
+        }
+      ],
+      "settings": [
+        {
+          "id": "model",
+          "label": "판",
+          "help": "3B · fp8 이 12GB 그래픽카드의 기본입니다. 7B 는 더 자세하지만 느리고, 그래픽카드 메모리가 모자라면 일부를 시스템 메모리로 옮겨(BlockSwap) 더 느려집니다. GGUF Q4 는 가장 가볍고 품질이 조금 낮습니다. 고른 판만 받습니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "3b-fp8",
+              "label": "3B · fp8 (기본, 3.4GB)"
+            },
+            {
+              "value": "3b-fp16",
+              "label": "3B · fp16 (6.8GB)"
+            },
+            {
+              "value": "3b-q4",
+              "label": "3B · GGUF Q4 (2.0GB, 가장 가벼움)"
+            },
+            {
+              "value": "7b-fp8",
+              "label": "7B · fp8 (8.5GB, 고품질)"
+            },
+            {
+              "value": "7b-sharp-fp8",
+              "label": "7B 선명 · fp8 (8.5GB)"
+            },
+            {
+              "value": "7b-q4",
+              "label": "7B · GGUF Q4 (4.8GB)"
+            }
+          ],
+          "default": "3b-fp8"
+        },
+        {
+          "id": "scale",
+          "label": "크기",
+          "help": "몇 배로 키울지, 또는 결과의 짧은 변 길이. 사진은 긴 변 4096px, 영상은 긴 변 2560px 까지 키웁니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "x2",
+              "label": "2배"
+            },
+            {
+              "value": "x3",
+              "label": "3배"
+            },
+            {
+              "value": "x4",
+              "label": "4배"
+            },
+            {
+              "value": "1080",
+              "label": "짧은 변 1080px"
+            },
+            {
+              "value": "1440",
+              "label": "짧은 변 1440px"
+            },
+            {
+              "value": "2160",
+              "label": "짧은 변 2160px"
+            }
+          ],
+          "default": "x2"
+        },
+        {
+          "id": "batch",
+          "label": "한 번에 처리할 프레임",
+          "help": "앞뒤 프레임을 함께 보며 키워 깜빡임을 줄입니다. 크게 할수록 매끄럽지만 그래픽카드 메모리를 더 씁니다. 12GB 는 5 를 권합니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "5",
+              "label": "5프레임"
+            },
+            {
+              "value": "9",
+              "label": "9프레임"
+            },
+            {
+              "value": "13",
+              "label": "13프레임"
+            },
+            {
+              "value": "21",
+              "label": "21프레임"
+            },
+            {
+              "value": "33",
+              "label": "33프레임"
+            }
+          ],
+          "default": "5"
+        },
+        {
+          "id": "color",
+          "label": "색 맞추기",
+          "help": "키운 결과의 색을 원본에 맞춥니다. LAB 이 원본 색에 가장 가깝습니다(권장). 웨이블릿은 자연스러운 색, 안 함은 모델이 낸 색 그대로입니다.",
+          "type": "select",
+          "options": [
+            {
+              "value": "lab",
+              "label": "원본 색 (LAB)"
+            },
+            {
+              "value": "wavelet",
+              "label": "웨이블릿"
+            },
+            {
+              "value": "none",
+              "label": "안 함"
+            }
+          ],
+          "default": "lab"
+        },
+        {
+          "id": "seed",
+          "label": "시드",
+          "help": "같은 시드 · 같은 입력이면 같은 결과가 나옵니다.",
+          "type": "integer",
+          "default": 42,
+          "min": 0,
+          "max": 2147483647
+        }
+      ]
+    }
+  ],
+  "python": {
+    "version": "3.12",
+    "torch": "host",
+    "lock": {
+      "win": "nodes/requirements-win.txt",
+      "linux": "nodes/requirements-linux.txt",
+      "mac": "nodes/requirements-mac.txt"
+    },
+    "entry": "nodes.main"
+  },
+  "gpu": {
+    "vramMinMb": 6144,
+    "cpuAllowed": false
+  },
+  "permissions": {},
+  "requires": {
+    "models": [
+      {
+        "source": "huggingface",
+        "repo": "numz/SeedVR2_comfyUI",
+        "revision": "09ced71023636e9bc8cdf9cdecfb2625d1e691e8",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "ema_vae_fp16.safetensors",
+            "bytes": 501324814,
+            "sha256": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1"
+          }
+        ]
+      },
+      {
+        "source": "huggingface",
+        "repo": "ByteDance-Seed/SeedVR2-3B",
+        "revision": "37255ff8cccfb01071b87f635a5948ca8d53117c",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "pos_emb.pt",
+            "bytes": 595100,
+            "sha256": "fa07a14844314772266b66c3b95deb0027696d8fe7065721263db5176f45d799"
+          },
+          {
+            "path": "neg_emb.pt",
+            "bytes": 656540,
+            "sha256": "6a43e5800ef2354f1c156d27535834da055cbec8248298b8923492bba2076581"
+          }
+        ]
+      },
+      {
+        "source": "huggingface",
+        "repo": "numz/SeedVR2_comfyUI",
+        "revision": "09ced71023636e9bc8cdf9cdecfb2625d1e691e8",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b_fp8_e4m3fn.safetensors",
+            "bytes": 3391544696,
+            "sha256": "3bf1e43ebedd570e7e7a0b1b60d6a02e105978f505c8128a241cde99a8240cff"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "3b-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "numz/SeedVR2_comfyUI",
+        "revision": "09ced71023636e9bc8cdf9cdecfb2625d1e691e8",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b_fp16.safetensors",
+            "bytes": 6783018808,
+            "sha256": "2fd0e03a3dad24e07086750360727ca437de4ecd456f769856e960ae93e2b304"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "3b-fp16"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b-Q4_K_M.gguf",
+            "bytes": 1995344224,
+            "sha256": "e665e3909de1a8c88a69c609bca9d43ff5a134647face2ce4497640cc3597f0e"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "3b-q4"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b_fp8_e4m3fn_mixed_block35_fp16.safetensors",
+            "bytes": 8466296338,
+            "sha256": "3d68b5ec0b295ae28092e355c8cad870edd00b817b26587d0cb8f9dd2df19bb2"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "7b-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b_sharp_fp8_e4m3fn_mixed_block35_fp16.safetensors",
+            "bytes": 8466296338,
+            "sha256": "0d2c5b8be0fda94351149c5115da26aef4f4932a7a2a928c6f184dda9186e0be"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "7b-sharp-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b-Q4_K_M.gguf",
+            "bytes": 4758306592,
+            "sha256": "db9cb2ad90ebd40d2e8c29da2b3fc6fd03ba87cd58cbadceccca13ad27162789"
+          }
+        ],
+        "when": {
+          "node": "image",
+          "setting": "model",
+          "values": [
+            "7b-q4"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "numz/SeedVR2_comfyUI",
+        "revision": "09ced71023636e9bc8cdf9cdecfb2625d1e691e8",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b_fp8_e4m3fn.safetensors",
+            "bytes": 3391544696,
+            "sha256": "3bf1e43ebedd570e7e7a0b1b60d6a02e105978f505c8128a241cde99a8240cff"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "3b-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "numz/SeedVR2_comfyUI",
+        "revision": "09ced71023636e9bc8cdf9cdecfb2625d1e691e8",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b_fp16.safetensors",
+            "bytes": 6783018808,
+            "sha256": "2fd0e03a3dad24e07086750360727ca437de4ecd456f769856e960ae93e2b304"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "3b-fp16"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_3b-Q4_K_M.gguf",
+            "bytes": 1995344224,
+            "sha256": "e665e3909de1a8c88a69c609bca9d43ff5a134647face2ce4497640cc3597f0e"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "3b-q4"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b_fp8_e4m3fn_mixed_block35_fp16.safetensors",
+            "bytes": 8466296338,
+            "sha256": "3d68b5ec0b295ae28092e355c8cad870edd00b817b26587d0cb8f9dd2df19bb2"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "7b-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b_sharp_fp8_e4m3fn_mixed_block35_fp16.safetensors",
+            "bytes": 8466296338,
+            "sha256": "0d2c5b8be0fda94351149c5115da26aef4f4932a7a2a928c6f184dda9186e0be"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "7b-sharp-fp8"
+          ]
+        }
+      },
+      {
+        "source": "huggingface",
+        "repo": "AInVFX/SeedVR2_comfyUI",
+        "revision": "ac66d6d98fa49975d893b58c55bff7677191c862",
+        "license": "Apache-2.0",
+        "files": [
+          {
+            "path": "seedvr2_ema_7b-Q4_K_M.gguf",
+            "bytes": 4758306592,
+            "sha256": "db9cb2ad90ebd40d2e8c29da2b3fc6fd03ba87cd58cbadceccca13ad27162789"
+          }
+        ],
+        "when": {
+          "node": "video",
+          "setting": "model",
+          "values": [
+            "7b-q4"
+          ]
+        }
+      }
+    ]
+  }
+}
